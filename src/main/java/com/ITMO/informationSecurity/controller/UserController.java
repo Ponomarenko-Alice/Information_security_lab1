@@ -1,27 +1,22 @@
 package com.ITMO.informationSecurity.controller;
 
-import com.ITMO.informationSecurity.repository.UserRepository;
-import com.ITMO.informationSecurity.service.DataService;
+import com.ITMO.informationSecurity.model.User;
 import com.ITMO.informationSecurity.service.JwtService;
+import com.ITMO.informationSecurity.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
-@Controller
-@RequestMapping("/api/data")
+@RestController
+@RequestMapping("/api/users")
 @RequiredArgsConstructor
-public class DataController {
+public class UserController {
+    private final UserService service;
     private final JwtService jwtService;
-    private final DataService dataService;
-    private final UserRepository userRepository;
 
     private static String extractBearer(String header) {
         if (header == null) return null;
@@ -29,10 +24,16 @@ public class DataController {
         return header.substring(7);
     }
 
-    @GetMapping("/poem/{id}")
-    public ResponseEntity<List<String>> getPoem(@RequestHeader(value = "Authorization", required = false) String authHeader, @PathVariable Long id) {
+    @GetMapping("/{username}")
+    public User byUsername(@PathVariable String username, @RequestHeader(value = "Authorization", required = false) String authHeader) {
         checkAuth(authHeader);
-        return ResponseEntity.ok(dataService.getPoemWords(id));
+        return service.getByUsername(username);
+    }
+
+    @GetMapping("/search")
+    public List<User> search(@RequestParam(defaultValue = "") String q, @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        checkAuth(authHeader);
+        return service.search(q);
     }
 
     private void checkAuth(@RequestHeader(value = "Authorization", required = false) String authHeader) {
@@ -50,5 +51,4 @@ public class DataController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token");
         }
     }
-
 }
