@@ -13,36 +13,29 @@ on:
       - '**/*.java'
       - '**/pom.xml'
       - '.github/workflows/ci.yml'
-
 jobs:
   sast-java:
     runs-on: ubuntu-latest
     env:
-      MAVEN_OPTS: "-Dmaven.wagon.httpconnectionManager.ttlSeconds=25 -Dhttp.keepAlive=false"
       DC_DATA_DIR: ${{ github.workspace }}/.m2/dependency-check-data
-      NVD_API_KEY: ${{ secrets.NVD_API_KEY }} # optional
+      NVD_API_KEY: ${{ secrets.NVD_API_KEY }} # опционально
     steps:
       - uses: actions/checkout@v4
-      - name: Set up JDK 21
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
           cache: maven
-      - name: Prepare Dependency-Check cache dir
-        run: mkdir -p "$DC_DATA_DIR"
-      - name: Maven verify (SpotBugs + OWASP DC)
-        shell: bash
+      - run: mkdir -p "$DC_DATA_DIR"
+      - name: Maven verify + DC (explicit goal)
         run: |
           EXTRA=""
           if [ -n "${NVD_API_KEY}" ]; then EXTRA="-DnvdApiKey=${NVD_API_KEY}"; fi
-          mvn -B -DskipTests -DdataDirectory="$DC_DATA_DIR" $EXTRA clean verify
-      - name: Upload SpotBugs report
+          mvn -B -DskipTests -DdataDirectory="$DC_DATA_DIR" clean verify
+          mvn -B -DskipTests -DdataDirectory="$DC_DATA_DIR" $EXTRA org.owasp:dependency-check-maven:check
+      - name: List reports
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: spotbugs-report
-          path: "**/target/spotbugsXml.xml"
+        run: find . -type f -name "dependency-check-report.*" -o -name "spotbugs*.xml" | sed 's|^\./||'
       - name: Upload Dependency-Check reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -51,3 +44,10 @@ jobs:
           path: |
             **/target/dependency-check-report.html
             **/target/dependency-check-report.json
+            **/target/dependency-check-report.xml
+      - name: Upload SpotBugs report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: spotbugs-report
+          path: "**/target/spotbugsXml.xml"
