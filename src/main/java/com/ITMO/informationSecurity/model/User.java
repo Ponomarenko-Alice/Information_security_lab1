@@ -21,7 +21,7 @@ public class User {
     private String username;
     private String password;
     private String status = "ACTIVE";
-    @Column( updatable = false)
+    @Column(updatable = false)
     private Instant createdAt = Instant.now();
 
 }
