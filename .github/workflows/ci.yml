@@ -1,18 +1,28 @@
-name: GitHub Actions Demo
-run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
-on: [push]
-jobs:
-  Explore-GitHub-Actions:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-      - name: Check out repository code
-        uses: actions/checkout@v5
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-      - name: List files in the repository
-        run: |
-          ls ${{ github.workspace }}
-      - run: echo "🍏 This job's status is ${{ job.status }}."
+stages: [build, test, sast]
+
+sast:java:
+  stage: sast
+  image: maven:3.9.7-eclipse-temurin-21
+  variables:
+    MAVEN_OPTS: "-Dmaven.wagon.httpconnectionManager.ttlSeconds=25 -Dhttp.keepAlive=false"
+    DC_DATA_DIR: ".m2/dependency-check-data"
+  cache:
+    key: "${CI_PROJECT_PATH}-m2"
+    paths:
+      - .m2/repository
+      - .m2/dependency-check-data
+  before_script:
+    - mkdir -p .m2/dependency-check-data
+  script:
+    - mvn -B -DskipTests -DdataDirectory=$DC_DATA_DIR ${NVD_API_KEY:+-DnvdApiKey=$NVD_API_KEY} clean verify
+  artifacts:
+    when: always
+    paths:
+      - "**/target/spotbugsXml.xml"
+      - "**/target/dependency-check-report.html"
+      - "**/target/dependency-check-report.json"
+    expire_in: 7 days
+  allow_failure: false
+  rules:
+    - exists:
+        - pom.xml

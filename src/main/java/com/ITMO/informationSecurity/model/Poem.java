@@ -9,14 +9,14 @@ import java.util.List;
 
 @Entity
 @Table(name = "poem")
+@Getter
+@Setter
 public class Poem {
     @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Setter
-    @Getter
     @ElementCollection
     @CollectionTable(name = "poem_words", joinColumns = @JoinColumn(name = "poem_id"))
     @OrderColumn(name = "pos")
