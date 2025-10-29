@@ -20,7 +20,7 @@ jobs:
       - name: SpotBugs via Maven
         run: |
           mvn -B -DskipTests install
-          mvn -B com.github.spotbugs:spotbugs-maven-plugin:4.8.6.2:spotbugs || true
+          mvn -B -DskipTests spotbugs:spotbugs || true
 
   sca-owasp:
     name: SCA (OWASP Dependency-Check)
