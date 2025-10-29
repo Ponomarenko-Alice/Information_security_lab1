@@ -20,7 +20,7 @@ jobs:
       - name: SpotBugs via Maven
         run: |
           mvn -B -DskipTests install
-          mvn -B -DskipTests spotbugs:spotbugs || true
+          mvn -B -DskipTests -DnvdApiKey=${NVD_API_KEY} spotbugs:spotbugs || true
 
   sca-owasp:
     name: SCA (OWASP Dependency-Check)
