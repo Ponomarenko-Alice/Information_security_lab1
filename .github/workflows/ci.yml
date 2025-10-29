@@ -23,6 +23,7 @@ jobs:
         run: |
           mvn -q help:evaluate -Dexpression=env.NVD_API_KEY -DforceStdout
           mvn -B -DskipTests install
+          export NVD_API_KEY=${{ secrets.NVD_API_KEY }}
           mvn -B -DskipTests spotbugs:check -DnvdApiKeyEnvironmentVariable=NVD_API_KEY || true
 
       - name: Upload SpotBugs report
