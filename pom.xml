@@ -28,7 +28,6 @@
     </scm>
     <properties>
         <java.version>21</java.version>
-        <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
     </properties>
 
     <dependencies>
@@ -115,6 +114,7 @@
                 <artifactId>dependency-check-maven</artifactId>
                 <version>9.2.0</version>
                 <configuration>
+                    <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
                     <failOnError>false</failOnError>
                     <failBuildOnCVSS>7.0</failBuildOnCVSS> <!-- break build on High/Critical -->
                     <skipTestScope>true</skipTestScope>
