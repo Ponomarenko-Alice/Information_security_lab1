@@ -112,7 +112,7 @@
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
-                <version>9.2.0</version>
+                <version>10.0.2</version>
                 <configuration>
                     <nvdApiKey>8AF8B405-ECB4-F011-8363-0EBF96DE670D</nvdApiKey>
                     <failOnError>false</failOnError>
