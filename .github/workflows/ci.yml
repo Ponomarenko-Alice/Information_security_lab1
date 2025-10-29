@@ -6,6 +6,8 @@ on: [ push, pull_request ]
 #  contents: read
 jobs:
   java-sast:
+    env:
+       NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
     name: Java SAST (SpotBugs)
     runs-on: ubuntu-latest
     steps:
