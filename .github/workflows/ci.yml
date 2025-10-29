@@ -4,7 +4,6 @@ on: [ push, pull_request ]
 
 #permissions:
 #  contents: read
-
 jobs:
   java-sast:
     name: Java SAST (SpotBugs)
@@ -26,6 +25,8 @@ jobs:
   sca-owasp:
     name: SCA (OWASP Dependency-Check)
     runs-on: ubuntu-latest
+    env:
+      NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
     steps:
       - uses: actions/checkout@v4
 
@@ -37,6 +38,7 @@ jobs:
             --project "repo-${{ github.repository }}" \
             --scan . \
             --format "JSON" \
+            --nvdApiKey "$NVD_API_KEY" || true
             --out dependency-check-report || true
 
       - name: Upload Dependency-Check report
