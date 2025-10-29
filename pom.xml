@@ -114,7 +114,7 @@
                 <artifactId>dependency-check-maven</artifactId>
                 <version>9.2.0</version>
                 <configuration>
-                    <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
+                    <nvdApiKey>8AF8B405-ECB4-F011-8363-0EBF96DE670D</nvdApiKey>
                     <failOnError>false</failOnError>
                     <failBuildOnCVSS>7.0</failBuildOnCVSS> <!-- break build on High/Critical -->
                     <skipTestScope>true</skipTestScope>
