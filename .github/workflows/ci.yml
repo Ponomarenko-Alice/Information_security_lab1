@@ -38,8 +38,8 @@ jobs:
             --project "repo-${{ github.repository }}" \
             --scan . \
             --format "JSON" \
+            --out dependency-check-report || true \
             --nvdApiKey "$NVD_API_KEY" || true
-            --out dependency-check-report || true
 
       - name: Upload Dependency-Check report
         uses: actions/upload-artifact@v4
