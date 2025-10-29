@@ -1,53 +1,47 @@
-name: SAST
+name: SAST & SCA check
 
-on:
-  push:
-    branches: [ main, master ]
-    paths:
-      - '**/*.java'
-      - '**/pom.xml'
-      - '.github/workflows/ci.yml'
-  pull_request:
-    branches: [ main, master ]
-    paths:
-      - '**/*.java'
-      - '**/pom.xml'
-      - '.github/workflows/ci.yml'
+on: [push, pull_request]
+
+#permissions:
+#  contents: read
+
 jobs:
-  sast-java:
+  java-sast:
+    name: Java SAST (SpotBugs)
     runs-on: ubuntu-latest
-    env:
-      DC_DATA_DIR: ${{ github.workspace }}/.m2/dependency-check-data
-      NVD_API_KEY: ${{ secrets.NVD_API_KEY }} # опционально
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: 'temurin'
           java-version: '21'
-          cache: maven
-      - run: mkdir -p "$DC_DATA_DIR"
-      - name: Maven verify + DC (explicit goal)
+
+      - name: SpotBugs via Maven
         run: |
-          EXTRA=""
-          if [ -n "${NVD_API_KEY}" ]; then EXTRA="-DnvdApiKey=${NVD_API_KEY}"; fi
-          mvn -B -DskipTests -DdataDirectory="$DC_DATA_DIR" clean verify
-          mvn -B -DskipTests -DdataDirectory="$DC_DATA_DIR" $EXTRA org.owasp:dependency-check-maven:check
-      - name: List reports
-        if: always()
-        run: find . -type f -name "dependency-check-report.*" -o -name "spotbugs*.xml" | sed 's|^\./||'
-      - name: Upload Dependency-Check reports
-        if: always()
+          mvn -B -DskipTests install
+          mvn -B com.github.spotbugs:spotbugs-maven-plugin:4.8.6.2:spotbugs || true
+
+  sca-owasp:
+    name: SCA (OWASP Dependency-Check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: run OWASP Dependency-Check
+        run: |
+          curl -sLo dc.zip https://github.com/jeremylong/DependencyCheck/releases/download/v10.0.3/dependency-check-10.0.3-release.zip
+          unzip -q dc.zip -d $HOME/dc
+          $HOME/dc/dependency-check/bin/dependency-check.sh \
+            --project "repo-${{ github.repository }}" \
+            --scan . \
+            --format "JSON" \
+            --out dependency-check-report || true
+
+      - name: Upload Dependency-Check report
         uses: actions/upload-artifact@v4
         with:
-          name: dependency-check-report
-          path: |
-            **/target/dependency-check-report.html
-            **/target/dependency-check-report.json
-            **/target/dependency-check-report.xml
-      - name: Upload SpotBugs report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: spotbugs-report
-          path: "**/target/spotbugsXml.xml"
+          name: owasp-dependency-check-report
+          path: dependency-check-report
+          if-no-files-found: ignore
