@@ -6,8 +6,6 @@ on: [ push, pull_request ]
 #  contents: read
 jobs:
   java-sast:
-    env:
-       NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
     name: Java SAST (SpotBugs)
     runs-on: ubuntu-latest
     steps:
@@ -20,7 +18,10 @@ jobs:
           java-version: '21'
 
       - name: SpotBugs via Maven
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: |
+          mvn -q help:evaluate -Dexpression=env.NVD_API_KEY -DforceStdout
           mvn -B -DskipTests install
           mvn -B -DskipTests spotbugs:check || true
 
