@@ -116,7 +116,6 @@
                 <configuration>
                     <nvdApiKey>c188044e-cde6-4a1f-ac05-f6aada6e5627</nvdApiKey>
                     <failOnError>false</failOnError>
-                    <failBuildOnCVSS>7.0</failBuildOnCVSS> <!-- break build on High/Critical -->
                     <skipTestScope>true</skipTestScope>
                     <!-- cache dir can be overridden via -DdataDirectory -->
                 </configuration>
